@@ -4,7 +4,7 @@ REST API built with Django for automatic exoplanet detection using Machine Learn
 
 ## 👥 Team
 
-- **Nahine**: Backend API (DRF) - That's YOU! 🔥
+- **Nahine**: Backend API (DRF) 
 - **Powell**: Machine Learning & Data Science
 - **Belange**: Django Backend & Deployment
 - **Fried**: Frontend & UI/UX
@@ -34,7 +34,7 @@ virtualenv (recommended)
 ### 2. Clone and Install
 ```bash
 # Clone the project
-git clone <your-repo>
+git clone https://github.com/Sky7-dev-05/exoplanet_AI.git
 cd exoplanet_api
 
 # Create virtual environment
@@ -250,40 +250,8 @@ response = requests.post(url, json=data)
 print(response.json())
 ```
 
----
 
-## 🔗 Frontend Integration
-
-The frontend (Fried + Wéri) should call these endpoints:
-
-**React Example:**
-```javascript
-// Simple prediction
-const predictExoplanet = async (data) => {
-  const response = await fetch('http://127.0.0.1:8000/api/predict/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return await response.json();
-};
-
-// Usage
-const result = await predictExoplanet({
-  orbital_period: 3.52,
-  transit_duration: 2.5,
-  planetary_radius: 1.2,
-  star_temperature: 5800
-});
-
-console.log(result); // { prediction: "Confirmed", probability: 0.92, ... }
-```
-
----
-
-## 🤝 Integration with Powell's ML Module
-
-The file `ml_model/predict_exoplanet.py` is a **template** that Powell needs to complete.
+## 🤝 Integration with ML Module
 
 **What Powell needs to provide:**
 1. A trained model saved as `.pkl`
@@ -295,59 +263,21 @@ The file `ml_model/predict_exoplanet.py` is a **template** that Powell needs to 
 - Remove the `_simulate_prediction()` function
 
 ---
+### . Deployement
 
-## 🚀 Deployment (Belange)
+1. Go to [Render.com](https://render.com)
+2. Click **“New +” → “Web Service”**
+3. Connect your GitHub repo
+4. Set:
 
-### Option 1: Docker
-```dockerfile
-# Dockerfile to create
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["gunicorn", "exoplanet_api.wsgi:application"]
-```
+   * **Build Command:** `pip install -r requirements.txt`
+   * **Start Command:** `gunicorn exoplanet_api.wsgi:application`
+5. Click **Create Web Service**
 
-### Option 2: Classic Server
-```bash
-# Install gunicorn
-pip install gunicorn
+After deployment, Render will give you a live URL like:
+`https://exoplanet-api.onrender.com/`
 
-# Launch in production
-gunicorn exoplanet_api.wsgi:application --bind 0.0.0.0:8000
-```
 
----
-
-## 📝 TODO List
-
-### Nahine (YOU)
-- [x] Create REST endpoints
-- [x] Data validation
-- [x] Error handling
-- [ ] Unit tests
-- [ ] Postman documentation
-
-### Powell
-- [ ] Train ML model
-- [ ] Save as .pkl
-- [ ] Complete `predict_exoplanet.py`
-- [ ] Document expected features
-
-### Belange
-- [ ] Integrate API into main project
-- [ ] Docker configuration
-- [ ] Server deployment
-- [ ] Monitoring & logs
-
-### Fried & Wéri
-- [ ] Web interface
-- [ ] REST API integration
-- [ ] Stats dashboard
-- [ ] CSV upload
-
----
 
 ## 🆘 Support
 
@@ -362,6 +292,3 @@ gunicorn exoplanet_api.wsgi:application --bind 0.0.0.0:8000
 
 MIT License - NASA Challenge 2025
 
----
-
-**Good luck Nahine! 🚀🔥**

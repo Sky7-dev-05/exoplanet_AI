@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: exoplanet-api
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn exoplanet_api.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: exoplanet_api.settings
+      - key: PYTHON_VERSION
+        value: 3.11

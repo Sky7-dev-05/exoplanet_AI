@@ -87,8 +87,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'uploads'
@@ -118,3 +118,8 @@ CORS_ALLOW_CREDENTIALS = True
 ML_MODEL_PATH = BASE_DIR / 'ml_model' / 'models' / 'exoplanet_model.pkl'
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
