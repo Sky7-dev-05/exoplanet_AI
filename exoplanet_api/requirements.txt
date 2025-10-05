@@ -22,3 +22,5 @@ threadpoolctl==3.6.0
 tzdata==2025.2
 uritemplate==4.2.0
 xgboost==3.0.5
+gunicorn==21.2.0
+
