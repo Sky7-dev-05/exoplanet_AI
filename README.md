@@ -1,90 +1,93 @@
 # 🚀 Exoplanet Detection API
 
-API REST Django pour la détection automatique d'exoplanètes utilisant le Machine Learning.
+REST API built with Django for automatic exoplanet detection using Machine Learning.
 
-## 👥 Équipe
+## 👥 Team
 
-- **Nahine** : Backend API (DRF) - C'est TOI ! 🔥
-- **Powell** : Machine Learning & Data Science
-- **Belange** : Backend Django & Déploiement
-- **Fried** : Frontend & UI/UX
-- **Wéri** : Intégration Frontend
+- **Nahine**: Backend API (DRF) - That's YOU! 🔥
+- **Powell**: Machine Learning & Data Science
+- **Belange**: Django Backend & Deployment
+- **Fried**: Frontend & UI/UX
+- **Wéri**: Frontend Integration
 
 ---
 
 ## 📋 Description
 
-Cette API permet de :
-- ✅ Prédire si des données correspondent à une exoplanète confirmée
-- ✅ Analyser des fichiers CSV en batch
-- ✅ Consulter l'historique des prédictions
-- ✅ Obtenir des statistiques et infos sur le modèle ML
+This API allows you to:
+- ✅ Predict if data corresponds to a confirmed exoplanet
+- ✅ Analyze CSV files in batch
+- ✅ View prediction history
+- ✅ Get statistics and ML model information
 
 ---
 
 ## 🛠️ Installation
 
-### 1. Prérequis
+### 1. Prerequisites
 ```bash
 Python 3.11+
 pip
-virtualenv (recommandé)
+virtualenv (recommended)
 ```
 
-### 2. Cloner et installer
+### 2. Clone and Install
 ```bash
-# Cloner le projet
-git clone <votre-repo>
+# Clone the project
+git clone <your-repo>
 cd exoplanet_api
 
-# Créer un environnement virtuel
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Sur Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Installer les dépendances
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ### 3. Configuration
 ```bash
-# Copier le fichier .env
+# Copy .env file
 cp .env.example .env
 
-# Configurer la base de données
+# Configure database
 python manage.py makemigrations
 python manage.py migrate
 
-# Créer un superuser (admin)
+# Create superuser (admin)
 python manage.py createsuperuser
 ```
 
-### 4. Lancer le serveur
+### 4. Launch Server
 ```bash
 python manage.py runserver
 ```
 
-Le serveur démarre sur : **http://127.0.0.1:8000**
+Server starts on: **http://127.0.0.1:8000**
 
 ---
 
-## 📡 Endpoints API
+## 📡 API Endpoints
 
-### Base URL : `/api/`
+### Base URL: `/api/`
 
-| Méthode | Endpoint | Description | Auth |
+| Method | Endpoint | Description | Auth |
 |---------|----------|-------------|------|
-| POST | `/api/predict/` | Prédire une planète | Non |
-| POST | `/api/predict-batch/` | Prédire plusieurs planètes (CSV) | Non |
-| GET | `/api/model-info/` | Infos sur le modèle ML | Non |
-| GET | `/api/history/` | Historique des prédictions | Non |
-| GET | `/api/stats/` | Statistiques globales | Non |
-| POST | `/api/retrain/` | Ré-entraîner le modèle | **Admin** |
+| POST | `/api/predict/` | Predict a planet | No |
+| POST | `/api/predict-batch/` | Predict multiple planets (CSV) | No |
+| GET | `/api/model-info/` | ML model information | No |
+| GET | `/api/history/` | Prediction history | No |
+| GET | `/api/stats/` | Global statistics | No |
+| POST | `/api/retrain/` | Retrain the model | **Admin** |
+| POST/GET | `/api/metrics/` | Global metrics | No |
+| POST | `/api/graph1/` | Upload graph image 1 | No |
+| POST | `/api/graph2/` | Upload graph image 2 | No |
 
 ---
 
-## 🔥 Exemples d'utilisation
+## 🔥 Usage Examples
 
-### 1. Prédire une exoplanète (POST /api/predict/)
+### 1. Predict an Exoplanet (POST /api/predict/)
 
 **Request:**
 ```bash
@@ -109,13 +112,13 @@ curl -X POST http://127.0.0.1:8000/api/predict/ \
   "prediction": "Confirmed",
   "probability": 0.92,
   "confidence": "High",
-  "message": "Cette exoplanète est très probablement confirmée (92.0% de confiance)"
+  "message": "This exoplanet is very likely confirmed (92.0% confidence)"
 }
 ```
 
 ---
 
-### 2. Prédire en batch (POST /api/predict-batch/)
+### 2. Batch Prediction (POST /api/predict-batch/)
 
 **Request:**
 ```bash
@@ -123,7 +126,7 @@ curl -X POST http://127.0.0.1:8000/api/predict-batch/ \
   -F "file=@exoplanets_data.csv"
 ```
 
-**Exemple de fichier CSV :**
+**CSV File Example:**
 ```csv
 koi_score,koi_period,koi_impact,koi_duration,koi_depth,koi_prad,koi_sma,koi_teq,koi_model_snr
 0.95,3.52,0.1,2.5,500,1.2,0.05,580,10.0
@@ -154,7 +157,7 @@ koi_score,koi_period,koi_impact,koi_duration,koi_depth,koi_prad,koi_sma,koi_teq,
 
 ---
 
-### 3. Infos du modèle (GET /api/model-info/)
+### 3. Model Information (GET /api/model-info/)
 
 **Request:**
 ```bash
@@ -181,7 +184,7 @@ curl http://127.0.0.1:8000/api/model-info/
 
 ---
 
-### 4. Statistiques (GET /api/stats/)
+### 4. Statistics (GET /api/stats/)
 
 **Request:**
 ```bash
@@ -201,37 +204,37 @@ curl http://127.0.0.1:8000/api/stats/
 
 ---
 
-## 📊 Interface Admin
+## 📊 Admin Interface
 
-Accéder à l'interface admin Django :
-- URL : **http://127.0.0.1:8000/admin/**
-- Login avec le superuser créé précédemment
+Access Django admin interface:
+- URL: **http://127.0.0.1:8000/admin/**
+- Login with previously created superuser
 
-Fonctionnalités :
-- Consulter l'historique des prédictions
-- Gérer les infos du modèle ML
-- Voir les statistiques détaillées
-
----
-
-## 📖 Documentation API Interactive
-
-L'API inclut une documentation Swagger automatique :
-- **Swagger UI** : http://127.0.0.1:8000/
-- **ReDoc** : http://127.0.0.1:8000/redoc/
+Features:
+- View prediction history
+- Manage ML model information
+- View detailed statistics
 
 ---
 
-## 🧪 Tests
+## 📖 Interactive API Documentation
 
-### Tester avec Postman
-1. Importer la collection Postman (à créer)
-2. Tester chaque endpoint
+The API includes automatic Swagger documentation:
+- **Swagger UI**: http://127.0.0.1:8000/
+- **ReDoc**: http://127.0.0.1:8000/redoc/
 
-### Tester avec cURL
-Voir les exemples ci-dessus
+---
 
-### Tester avec Python
+## 🧪 Testing
+
+### Testing with Postman
+1. Import Postman collection (to be created)
+2. Test each endpoint
+
+### Testing with cURL
+See examples above
+
+### Testing with Python
 ```python
 import requests
 
@@ -249,13 +252,13 @@ print(response.json())
 
 ---
 
-## 🔗 Intégration avec le Frontend
+## 🔗 Frontend Integration
 
-Le frontend (Fried + Wéri) doit appeler ces endpoints :
+The frontend (Fried + Wéri) should call these endpoints:
 
-**Exemple React :**
+**React Example:**
 ```javascript
-// Prédiction simple
+// Simple prediction
 const predictExoplanet = async (data) => {
   const response = await fetch('http://127.0.0.1:8000/api/predict/', {
     method: 'POST',
@@ -278,26 +281,26 @@ console.log(result); // { prediction: "Confirmed", probability: 0.92, ... }
 
 ---
 
-## 🤝 Intégration avec le module ML de Powell
+## 🤝 Integration with Powell's ML Module
 
-Le fichier `ml_model/predict_exoplanet.py` est un **template** que Powell doit compléter.
+The file `ml_model/predict_exoplanet.py` is a **template** that Powell needs to complete.
 
-**Ce que Powell doit fournir :**
-1. Un modèle entraîné sauvegardé en `.pkl`
-2. Un scaler (si normalisation) en `.pkl`
-3. Compléter les fonctions `predict_single()` et `predict_batch()`
+**What Powell needs to provide:**
+1. A trained model saved as `.pkl`
+2. A scaler (if normalization needed) as `.pkl`
+3. Complete the `predict_single()` and `predict_batch()` functions
 
-**Une fois fait :**
-- L'API utilisera automatiquement le vrai modèle
-- Supprimer la fonction `_simulate_prediction()`
+**Once done:**
+- The API will automatically use the real model
+- Remove the `_simulate_prediction()` function
 
 ---
 
-## 🚀 Déploiement (Belange)
+## 🚀 Deployment (Belange)
 
-### Option 1 : Docker
+### Option 1: Docker
 ```dockerfile
-# Dockerfile à créer
+# Dockerfile to create
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -306,12 +309,12 @@ COPY . .
 CMD ["gunicorn", "exoplanet_api.wsgi:application"]
 ```
 
-### Option 2 : Serveur classique
+### Option 2: Classic Server
 ```bash
-# Installer gunicorn
+# Install gunicorn
 pip install gunicorn
 
-# Lancer en production
+# Launch in production
 gunicorn exoplanet_api.wsgi:application --bind 0.0.0.0:8000
 ```
 
@@ -319,46 +322,46 @@ gunicorn exoplanet_api.wsgi:application --bind 0.0.0.0:8000
 
 ## 📝 TODO List
 
-### Nahine (TOI)
-- [x] Créer les endpoints REST
-- [x] Validation des données
-- [x] Gestion des erreurs
-- [ ] Tests unitaires
-- [ ] Documentation Postman
+### Nahine (YOU)
+- [x] Create REST endpoints
+- [x] Data validation
+- [x] Error handling
+- [ ] Unit tests
+- [ ] Postman documentation
 
 ### Powell
-- [ ] Entraîner le modèle ML
-- [ ] Sauvegarder en .pkl
-- [ ] Compléter `predict_exoplanet.py`
-- [ ] Documenter les features attendues
+- [ ] Train ML model
+- [ ] Save as .pkl
+- [ ] Complete `predict_exoplanet.py`
+- [ ] Document expected features
 
 ### Belange
-- [ ] Intégrer l'API dans le projet global
-- [ ] Configuration Docker
-- [ ] Déploiement serveur
+- [ ] Integrate API into main project
+- [ ] Docker configuration
+- [ ] Server deployment
 - [ ] Monitoring & logs
 
 ### Fried & Wéri
-- [ ] Interface web
-- [ ] Intégration API REST
-- [ ] Dashboard stats
-- [ ] Upload CSV
+- [ ] Web interface
+- [ ] REST API integration
+- [ ] Stats dashboard
+- [ ] CSV upload
 
 ---
 
 ## 🆘 Support
 
-- **Problèmes API** : Contacter Nahine
-- **Problèmes ML** : Contacter Powell
-- **Problèmes Déploiement** : Contacter Belange
-- **Problèmes Frontend** : Contacter Fried/Wéri
+- **API Issues**: Contact Nahine
+- **ML Issues**: Contact Powell
+- **Deployment Issues**: Contact Belange
+- **Frontend Issues**: Contact Fried/Wéri
 
 ---
 
-## 📜 Licence
+## 📜 License
 
 MIT License - NASA Challenge 2025
 
 ---
 
-**Bon courage Nahine ! 🚀🔥**
+**Good luck Nahine! 🚀🔥**

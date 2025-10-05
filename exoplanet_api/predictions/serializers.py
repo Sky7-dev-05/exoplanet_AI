@@ -1,14 +1,12 @@
 """
-Serializers pour la validation et transformation des données
+Serializers for data validation and transformation
 """
 from rest_framework import serializers
 from .models import Prediction, ModelInfo
 
 
 class PredictionInputSerializer(serializers.Serializer):
-    """
-    Valide les données d'entrée pour la prédiction (colonnes Kepler)
-    """
+    """Validates input data for prediction (Kepler columns)"""
     koi_score = serializers.FloatField(
         required=False,
         min_value=0.0,
@@ -19,42 +17,42 @@ class PredictionInputSerializer(serializers.Serializer):
     koi_period = serializers.FloatField(
         required=True,
         min_value=0.0,
-        help_text="Période orbitale en jours"
+        help_text="Orbital period in days"
     )
     koi_impact = serializers.FloatField(
         required=False,
         min_value=0.0,
         default=0.0,
-        help_text="Paramètre d'impact"
+        help_text="Impact parameter"
     )
     koi_duration = serializers.FloatField(
         required=True,
         min_value=0.0,
-        help_text="Durée du transit en heures"
+        help_text="Transit duration in hours"
     )
     koi_depth = serializers.FloatField(
         required=False,
         min_value=0.0,
         default=0.0,
-        help_text="Profondeur du transit (ppm)"
+        help_text="Transit depth (ppm)"
     )
     koi_prad = serializers.FloatField(
         required=True,
         min_value=0.0,
-        help_text="Rayon planétaire (rayons terrestres)"
+        help_text="Planetary radius (Earth radii)"
     )
     koi_sma = serializers.FloatField(
         required=False,
         min_value=0.0,
         default=0.0,
-        help_text="Demi-grand axe (AU)"
+        help_text="Semi-major axis (AU)"
     )
     koi_teq = serializers.FloatField(
         required=False,
         allow_null=True,
         min_value=0.0,
         default=300.0,
-        help_text="Température d'équilibre (K)"
+        help_text="Equilibrium temperature (K)"
     )
     koi_model_snr = serializers.FloatField(
         required=False,
@@ -65,19 +63,15 @@ class PredictionInputSerializer(serializers.Serializer):
 
 
 class PredictionOutputSerializer(serializers.Serializer):
-    """
-    Format de la réponse de prédiction
-    """
-    prediction = serializers.CharField(help_text="Confirmed, Candidate, ou False Positive")
-    probability = serializers.FloatField(help_text="Probabilité entre 0 et 1")
-    confidence = serializers.CharField(help_text="High, Medium, ou Low")
-    message = serializers.CharField(help_text="Message explicatif")
+    """Prediction response format"""
+    prediction = serializers.CharField(help_text="Confirmed, Candidate, or False Positive")
+    probability = serializers.FloatField(help_text="Probability between 0 and 1")
+    confidence = serializers.CharField(help_text="High, Medium, or Low")
+    message = serializers.CharField(help_text="Explanatory message")
 
 
 class PredictionHistorySerializer(serializers.ModelSerializer):
-    """
-    Serializer pour l'historique des prédictions
-    """
+    """Serializer for prediction history"""
     class Meta:
         model = Prediction
         fields = [
@@ -99,9 +93,7 @@ class PredictionHistorySerializer(serializers.ModelSerializer):
 
 
 class ModelInfoSerializer(serializers.ModelSerializer):
-    """
-    Serializer pour les informations du modèle
-    """
+    """Serializer for model information"""
     features_list = serializers.SerializerMethodField()
     
     class Meta:
@@ -117,35 +109,30 @@ class ModelInfoSerializer(serializers.ModelSerializer):
         ]
     
     def get_features_list(self, obj):
-        """Convertit le string features en liste"""
+        """Converts features string to list"""
         return obj.features_used.split(',') if obj.features_used else []
 
 
 class CSVUploadSerializer(serializers.Serializer):
-    """
-    Valide l'upload de fichier CSV
-    """
+    """Validates CSV file upload"""
     file = serializers.FileField(
         required=True,
-        help_text="Fichier CSV contenant les données à prédire"
+        help_text="CSV file containing data to predict"
     )
     
     def validate_file(self, value):
-        """Vérifie que c'est bien un CSV"""
+        """Checks that it's a CSV file"""
         if not value.name.endswith('.csv'):
-            raise serializers.ValidationError("Le fichier doit être au format CSV")
+            raise serializers.ValidationError("File must be in CSV format")
         
-        # Vérifier la taille (10 MB max)
         if value.size > 10 * 1024 * 1024:
-            raise serializers.ValidationError("Le fichier est trop volumineux (max 10 MB)")
+            raise serializers.ValidationError("File is too large (max 10 MB)")
         
         return value
 
 
 class BatchPredictionOutputSerializer(serializers.Serializer):
-    """
-    Format de réponse pour les prédictions en batch (CSV)
-    """
+    """Response format for batch predictions (CSV)"""
     total_predictions = serializers.IntegerField()
     predictions = PredictionOutputSerializer(many=True)
     summary = serializers.DictField()
