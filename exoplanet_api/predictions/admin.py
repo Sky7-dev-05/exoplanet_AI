@@ -21,12 +21,12 @@ class PredictionAdmin(admin.ModelAdmin):
     search_fields = ['prediction', 'ip_address']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
-
+    
     def probability_percent(self, obj):
         """Displays probability as percentage"""
         return f"{obj.probability * 100:.1f}%"
     probability_percent.short_description = "Probability"
-
+    
     fieldsets = (
         ('Input Data', {
             'fields': (
@@ -35,7 +35,7 @@ class PredictionAdmin(admin.ModelAdmin):
             )
         }),
         ('Result', {
-            'fields': ('prediction', 'probability', 'koi_disposition')
+            'fields': ('prediction', 'probability')
         }),
         ('Metadata', {
             'fields': ('created_at', 'ip_address'),
@@ -51,6 +51,8 @@ class ModelInfoAdmin(admin.ModelAdmin):
         'version',
         'accuracy_percent',
         'f1_score',
+        'recall',
+        'precision',
         'trained_on',
         'total_predictions',
         'is_active'
@@ -59,17 +61,20 @@ class ModelInfoAdmin(admin.ModelAdmin):
     search_fields = ['version']
     ordering = ['-trained_on']
     readonly_fields = ['trained_on', 'total_predictions']
-
+    
     def accuracy_percent(self, obj):
         """Displays accuracy as percentage"""
         return f"{obj.accuracy * 100:.1f}%"
     accuracy_percent.short_description = "Accuracy"
-
+    
     fieldsets = (
         ('Model Information', {
-            'fields': ('version', 'accuracy', 'f1_score', 'features_used')
+            'fields': ('version', 'is_active')
         }),
-        ('Status', {
-            'fields': ('trained_on', 'total_predictions', 'is_active')
+        ('Performance Metrics', {
+            'fields': ('accuracy', 'f1_score', 'recall', 'precision')
+        }),
+        ('Configuration', {
+            'fields': ('trained_on', 'features_used', 'total_predictions')
         }),
     )

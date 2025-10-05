@@ -35,10 +35,12 @@ class Prediction(models.Model):
 class ModelInfo(models.Model):
     """Stores information about the current ML model"""
     version = models.CharField(max_length=20, unique=True)
-    accuracy = models.FloatField(help_text="Model accuracy")
+    accuracy = models.FloatField(help_text="Précision du modèle")
     f1_score = models.FloatField(help_text="F1 Score", null=True, blank=True)
-    trained_on = models.DateTimeField(help_text="Training date")
-    features_used = models.TextField(help_text="List of features used")
+    precision = models.FloatField(help_text="Precision", null=True, blank=True, default=0.88)  # AJOUTE
+    recall = models.FloatField(help_text="Recall", null=True, blank=True, default=0.89)  # AJOUTE
+    trained_on = models.DateTimeField(help_text="Date d'entraînement")
+    features_used = models.TextField(help_text="Liste des features utilisées")
     total_predictions = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 

@@ -16,8 +16,8 @@ class PredictionInputSerializer(serializers.Serializer):
     )
     koi_period = serializers.FloatField(
         required=True,
-        min_value=0.0,
-        help_text="Orbital period in days"
+        min_value=0.001,  # ✅ CHANGÉ ICI
+        help_text="Orbital period in days (REQUIRED, must be > 0)"
     )
     koi_impact = serializers.FloatField(
         required=False,
@@ -27,8 +27,8 @@ class PredictionInputSerializer(serializers.Serializer):
     )
     koi_duration = serializers.FloatField(
         required=True,
-        min_value=0.0,
-        help_text="Transit duration in hours"
+        min_value=0.001,  # ✅ CHANGÉ ICI
+        help_text="Transit duration in hours (REQUIRED, must be > 0)"
     )
     koi_depth = serializers.FloatField(
         required=False,
@@ -38,8 +38,8 @@ class PredictionInputSerializer(serializers.Serializer):
     )
     koi_prad = serializers.FloatField(
         required=True,
-        min_value=0.0,
-        help_text="Planetary radius (Earth radii)"
+        min_value=0.001,  # ✅ CHANGÉ ICI
+        help_text="Planetary radius in Earth radii (REQUIRED, must be > 0)"
     )
     koi_sma = serializers.FloatField(
         required=False,

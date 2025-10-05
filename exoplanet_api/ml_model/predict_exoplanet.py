@@ -6,16 +6,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Paths to saved model and scaler
 MODEL_PATH = Path(__file__).parent / 'models' / 'exoplanet_model.pkl'
 SCALER_PATH = Path(__file__).parent / 'models' / 'scaler.pkl'
-
+IMPUTER_PATH = Path(__file__).parent / 'models' / 'imputer.pkl'
 
 class ExoplanetPredictor:
-    
     def __init__(self):
         self.model = None
         self.scaler = None
-        
+        self.imputer = None
+
+        # Expected feature order
         self.features = [
             'koi_score',
             'koi_period',
@@ -26,12 +28,12 @@ class ExoplanetPredictor:
             'koi_sma',
             'koi_teq',
             'koi_model_snr'
-        ]   
+        ]
 
-        self.target = 'koi_disposition'
         self.load_model()
-    
+
     def load_model(self):
+        """Load trained model, scaler and imputer"""
         try:
             if MODEL_PATH.exists():
                 self.model = joblib.load(MODEL_PATH)
@@ -39,29 +41,31 @@ class ExoplanetPredictor:
             else:
                 logger.warning("Model not found, using simulation mode")
                 self.model = None
-            
+
             if SCALER_PATH.exists():
                 self.scaler = joblib.load(SCALER_PATH)
                 logger.info(f"Scaler loaded from {SCALER_PATH}")
-        
+
+            if IMPUTER_PATH.exists():
+                self.imputer = joblib.load(IMPUTER_PATH)
+                logger.info(f"Imputer loaded from {IMPUTER_PATH}")
+
         except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
+            logger.error(f"Error loading model components: {str(e)}")
             self.model = None
             self.scaler = None
-    
+            self.imputer = None
+
     def preprocess_data(self, data):
+        """Convert raw input to ML-ready DataFrame"""
         if isinstance(data, dict):
             df = pd.DataFrame([data])
         else:
             df = data.copy()
-        
-        if 'koi_teq' not in df.columns:
-            df['koi_teq'] = 300
-            
-        X = df[self.features].copy()
 
-        X = X.fillna({
-            'koi_score': 0.0,
+        # Ensure all required features exist
+        defaults = {
+            'koi_score': 0.5,
             'koi_period': 0.0,
             'koi_impact': 0.0,
             'koi_duration': 0.0,
@@ -70,136 +74,108 @@ class ExoplanetPredictor:
             'koi_sma': 0.0,
             'koi_teq': 300.0,
             'koi_model_snr': 0.0
-        })
+        }
+        for f, v in defaults.items():
+            if f not in df.columns:
+                df[f] = v
 
+        # Apply imputation (trained on training data)
+        if self.imputer is not None:
+            df[self.features] = self.imputer.transform(df[self.features])
+        else:
+            df[self.features] = df[self.features].fillna(defaults)
+
+        # Scale features
         if self.scaler is not None:
-            X = self.scaler.transform(X)
-        return X
-    
+            df[self.features] = self.scaler.transform(df[self.features])
+
+        return df[self.features]
+
     def predict_single(self, data):
-        """Makes a prediction for a single planet"""
+        """Predict one exoplanet"""
         try:
             X = self.preprocess_data(data)
-            
+
             if self.model is not None:
-                prediction_class = self.model.predict(X)[0]
-                
+                pred_class = self.model.predict(X)[0]
+
                 if hasattr(self.model, 'predict_proba'):
-                    probabilities = self.model.predict_proba(X)[0]
-                    probability = float(np.max(probabilities))
+                    prob = float(np.max(self.model.predict_proba(X)[0]))
                 else:
-                    probability = 0.85
-                
-                class_mapping = {
-                    0: "False Positive",
-                    1: "Candidate",
-                    2: "Confirmed"
-                }
-                prediction = class_mapping.get(prediction_class, "Unknown")
-            
+                    prob = 0.85
             else:
-                prediction, probability = self._simulate_prediction(data)
-            
-            if probability > 0.8:
-                confidence = "High"
-            elif probability > 0.5:
-                confidence = "Medium"
-            else:
-                confidence = "Low"
-            
+                pred_class, prob = self._simulate_prediction(data)
+
+            class_map = {0: 'False Positive', 1: 'Candidate', 2: 'Confirmed'}
+            prediction = class_map.get(pred_class, 'Unknown')
+
+            confidence = (
+                "High" if prob > 0.8 else
+                "Medium" if prob > 0.5 else
+                "Low"
+            )
+
             messages = {
-                "Confirmed": f"This exoplanet is very likely confirmed ({probability*100:.1f}% confidence)",
-                "Candidate": f"This planet is a potential candidate ({probability*100:.1f}% confidence)",
-                "False Positive": f"This detection is probably a false positive ({probability*100:.1f}% confidence)"
+                "Confirmed": f"This exoplanet is very likely confirmed ({prob*100:.1f}% confidence)",
+                "Candidate": f"This planet is a potential candidate ({prob*100:.1f}% confidence)",
+                "False Positive": f"This detection is probably a false positive ({prob*100:.1f}% confidence)"
             }
-            message = messages.get(prediction, "Uncertain prediction")
-            
+
             return {
                 'prediction': prediction,
-                'probability': round(probability, 4),
+                'probability': round(prob, 4),
                 'confidence': confidence,
-                'message': message
+                'message': messages.get(prediction, "Uncertain prediction")
             }
-        
+
         except Exception as e:
             logger.error(f"Error during prediction: {str(e)}")
             raise
-    
-    def predict_batch(self, dataframe):
-        """Makes predictions for multiple planets"""
+
+    def predict_batch(self, df):
+        """Predict multiple rows"""
         results = []
-        
-        for idx, row in dataframe.iterrows():
+        for _, row in df.iterrows():
             try:
-                result = self.predict_single(row.to_dict())
-                results.append(result)
+                res = self.predict_single(row.to_dict())
+                results.append(res)
             except Exception as e:
-                logger.error(f"Error at row {idx}: {str(e)}")
+                logger.error(f"Error at row: {str(e)}")
                 results.append({
                     'prediction': 'Error',
                     'probability': 0.0,
                     'confidence': 'None',
                     'message': f'Error: {str(e)}'
                 })
-        
         return results
-    
+
     def _simulate_prediction(self, data):
-        """Temporary simulation logic for testing without ML model"""
+        """Fallback logic if no model"""
         orbital = data.get('koi_period', 0)
         radius = data.get('koi_prad', 0)
         duration = data.get('koi_duration', 0)
 
         score = 0
-        if orbital > 5:
-            score += 0.3
-        if radius > 1:
-            score += 0.3
-        if duration > 2:
-            score += 0.3
-        
-        import random
-        score += random.uniform(0, 0.2)
-        
+        if orbital > 5: score += 0.3
+        if radius > 1: score += 0.3
+        if duration > 2: score += 0.3
+
         if score > 0.7:
-            return "Confirmed", min(score + 0.15, 0.99)
+            return 2, min(score + 0.15, 0.99)
         elif score > 0.4:
-            return "Candidate", score
+            return 1, score
         else:
-            return "False Positive", 1 - score
+            return 0, 1 - score
 
 
+# Public API
 predictor = ExoplanetPredictor()
 
-
 def predict_single(data):
-    """Public interface for single prediction"""
     return predictor.predict_single(data)
 
-
-def predict_batch(dataframe):
-    """Public interface for batch prediction"""
-    return predictor.predict_batch(dataframe)
-
+def predict_batch(df):
+    return predictor.predict_batch(df)
 
 def reload_model():
-    """Reloads the model from disk"""
     predictor.load_model()
-
-
-if __name__ == "__main__":
-    test_data = {
-        'koi_score': 0.95,
-        'koi_period': 3.52,
-        'koi_impact': 0.1,
-        'koi_duration': 2.5,
-        'koi_depth': 500,
-        'koi_prad': 1.2,
-        'koi_sma': 0.05,
-        'koi_teq': 580,
-        'koi_model_snr': 10.0
-    }
-    
-    result = predict_single(test_data)
-    print("Prediction test:")
-    print(result)

@@ -16,4 +16,7 @@ urlpatterns = [
     path('metrics/', views.metrics, name='metrics'),
     path('graph1/', views.graph1, name='graph1'),
     path('graph2/', views.graph2, name='graph2'),
+    path('graph1/latest/', views.get_latest_graph1, name='get-latest-graph1'),
+    path('graph2/latest/', views.get_latest_graph2, name='get-latest-graph2'),
+    
 ]
