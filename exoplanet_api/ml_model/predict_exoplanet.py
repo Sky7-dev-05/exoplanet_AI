@@ -1,9 +1,3 @@
-"""
-Module de prédiction d'exoplanètes - À COMPLÉTER PAR POWELL
-
-Ce fichier est un TEMPLATE pour Powell.
-Il doit implémenter les fonctions predict_single() et predict_batch()
-"""
 import joblib
 import numpy as np
 import pandas as pd
@@ -12,15 +6,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Chemin vers le modèle sauvegardé
 MODEL_PATH = Path(__file__).parent / 'models' / 'exoplanet_model.pkl'
 SCALER_PATH = Path(__file__).parent / 'models' / 'scaler.pkl'
 
 
 class ExoplanetPredictor:
-    """
-    Classe pour encapsuler la logique de prédiction
-    """
     
     def __init__(self):
         self.model = None
@@ -38,60 +28,38 @@ class ExoplanetPredictor:
             'koi_model_snr'
         ]   
 
-        
-        self.target = 'koi_disposition'  # facultatif, pour info
+        self.target = 'koi_disposition'
         self.load_model()
     
     def load_model(self):
-        """
-        Charge le modèle ML et le scaler depuis les fichiers .pkl
-        
-        🚨 POWELL : Remplace cette fonction avec ton vrai modèle
-        """
         try:
             if MODEL_PATH.exists():
                 self.model = joblib.load(MODEL_PATH)
-                logger.info(f"Modèle chargé depuis {MODEL_PATH}")
+                logger.info(f"Model loaded from {MODEL_PATH}")
             else:
-                logger.warning("Modèle non trouvé, utilisation du mode simulation")
+                logger.warning("Model not found, using simulation mode")
                 self.model = None
             
             if SCALER_PATH.exists():
                 self.scaler = joblib.load(SCALER_PATH)
-                logger.info(f"Scaler chargé depuis {SCALER_PATH}")
+                logger.info(f"Scaler loaded from {SCALER_PATH}")
         
         except Exception as e:
-            logger.error(f"Erreur lors du chargement du modèle : {str(e)}")
+            logger.error(f"Error loading model: {str(e)}")
             self.model = None
             self.scaler = None
     
     def preprocess_data(self, data):
-        """
-        Prétraitement des données avant prédiction
-        
-        Args:
-            data (dict ou DataFrame): Données d'entrée
-        
-        Returns:
-            np.array: Données prétraitées
-        
-        🚨 POWELL : Ajoute ici ton preprocessing (normalisation, etc.)
-        """
         if isinstance(data, dict):
             df = pd.DataFrame([data])
         else:
             df = data.copy()
         
-        # Si la colonne koi_teq manque, mettre une valeur par défaut
         if 'koi_teq' not in df.columns:
-            df['koi_teq'] = 300  # température moyenne par défaut
+            df['koi_teq'] = 300
             
-            
-            
-            # Sélectionner les features dans le bon ordre (DataFrame, pas ndarray)
         X = df[self.features].copy()
 
-        # Remplir les valeurs manquantes avec des valeurs sûres
         X = X.fillna({
             'koi_score': 0.0,
             'koi_period': 0.0,
@@ -104,55 +72,24 @@ class ExoplanetPredictor:
             'koi_model_snr': 0.0
         })
 
-        # Normaliser si un scaler existe (passer un DataFrame garde les noms)
         if self.scaler is not None:
             X = self.scaler.transform(X)
-
-# X est maintenant un ndarray prêt pour la prédiction
-
-            
-        
         return X
     
     def predict_single(self, data):
-        """
-        Fait une prédiction pour une seule planète
-        
-        Args:
-            data (dict): {
-                'orbital_period': float,
-                'transit_duration': float,
-                'planetary_radius': float,
-                'star_temperature': float (optionnel)
-            }
-        
-        Returns:
-            dict: {
-                'prediction': str,      # "Confirmed", "Candidate", ou "False Positive"
-                'probability': float,   # Entre 0 et 1
-                'confidence': str,      # "High", "Medium", ou "Low"
-                'message': str
-            }
-        
-        🚨 POWELL : Remplace la simulation par ton vrai modèle
-        """
+        """Makes a prediction for a single planet"""
         try:
-            # Prétraiter les données
             X = self.preprocess_data(data)
             
-            # Si le modèle existe, utiliser la vraie prédiction
             if self.model is not None:
-                # Prédiction
                 prediction_class = self.model.predict(X)[0]
                 
-                # Probabilité (si le modèle supporte predict_proba)
                 if hasattr(self.model, 'predict_proba'):
                     probabilities = self.model.predict_proba(X)[0]
                     probability = float(np.max(probabilities))
                 else:
-                    probability = 0.85  # Valeur par défaut
+                    probability = 0.85
                 
-                # Mapper les classes
                 class_mapping = {
                     0: "False Positive",
                     1: "Candidate",
@@ -161,10 +98,8 @@ class ExoplanetPredictor:
                 prediction = class_mapping.get(prediction_class, "Unknown")
             
             else:
-                # 🚨 MODE SIMULATION (à supprimer quand le vrai modèle est prêt)
                 prediction, probability = self._simulate_prediction(data)
             
-            # Calculer le niveau de confiance
             if probability > 0.8:
                 confidence = "High"
             elif probability > 0.5:
@@ -172,13 +107,12 @@ class ExoplanetPredictor:
             else:
                 confidence = "Low"
             
-            # Message personnalisé
             messages = {
-                "Confirmed": f"Cette exoplanète est très probablement confirmée ({probability*100:.1f}% de confiance)",
-                "Candidate": f"Cette planète est un candidat potentiel ({probability*100:.1f}% de confiance)",
-                "False Positive": f"Cette détection est probablement un faux positif ({probability*100:.1f}% de confiance)"
+                "Confirmed": f"This exoplanet is very likely confirmed ({probability*100:.1f}% confidence)",
+                "Candidate": f"This planet is a potential candidate ({probability*100:.1f}% confidence)",
+                "False Positive": f"This detection is probably a false positive ({probability*100:.1f}% confidence)"
             }
-            message = messages.get(prediction, "Prédiction incertaine")
+            message = messages.get(prediction, "Uncertain prediction")
             
             return {
                 'prediction': prediction,
@@ -188,21 +122,11 @@ class ExoplanetPredictor:
             }
         
         except Exception as e:
-            logger.error(f"Erreur lors de la prédiction : {str(e)}")
+            logger.error(f"Error during prediction: {str(e)}")
             raise
     
     def predict_batch(self, dataframe):
-        """
-        Fait des prédictions pour plusieurs planètes
-        
-        Args:
-            dataframe (pd.DataFrame): DataFrame avec colonnes requises
-        
-        Returns:
-            list[dict]: Liste de résultats de prédiction
-        
-        🚨 POWELL : Optimise cette fonction pour le batch processing
-        """
+        """Makes predictions for multiple planets"""
         results = []
         
         for idx, row in dataframe.iterrows():
@@ -210,26 +134,22 @@ class ExoplanetPredictor:
                 result = self.predict_single(row.to_dict())
                 results.append(result)
             except Exception as e:
-                logger.error(f"Erreur ligne {idx} : {str(e)}")
+                logger.error(f"Error at row {idx}: {str(e)}")
                 results.append({
                     'prediction': 'Error',
                     'probability': 0.0,
                     'confidence': 'None',
-                    'message': f'Erreur : {str(e)}'
+                    'message': f'Error: {str(e)}'
                 })
         
         return results
     
     def _simulate_prediction(self, data):
-        """
-        🚨 SIMULATION TEMPORAIRE - À SUPPRIMER
-        Logique simple pour tester l'API sans modèle ML
-        """
+        """Temporary simulation logic for testing without ML model"""
         orbital = data.get('koi_period', 0)
         radius = data.get('koi_prad', 0)
         duration = data.get('koi_duration', 0)
 
-        # Logique simplifiée basée sur des seuils
         score = 0
         if orbital > 5:
             score += 0.3
@@ -238,7 +158,6 @@ class ExoplanetPredictor:
         if duration > 2:
             score += 0.3
         
-        # Ajouter un peu de randomness
         import random
         score += random.uniform(0, 0.2)
         
@@ -250,54 +169,25 @@ class ExoplanetPredictor:
             return "False Positive", 1 - score
 
 
-# ========================================
-# FONCTIONS PUBLIQUES (utilisées par l'API)
-# ========================================
-
-# Créer une instance globale du prédictor
 predictor = ExoplanetPredictor()
 
 
 def predict_single(data):
-    """
-    Interface publique pour prédiction unique
-    
-    Args:
-        data (dict): Données de la planète
-    
-    Returns:
-        dict: Résultat de la prédiction
-    """
+    """Public interface for single prediction"""
     return predictor.predict_single(data)
 
 
 def predict_batch(dataframe):
-    """
-    Interface publique pour prédiction batch
-    
-    Args:
-        dataframe (pd.DataFrame): Données de plusieurs planètes
-    
-    Returns:
-        list[dict]: Liste de résultats
-    """
+    """Public interface for batch prediction"""
     return predictor.predict_batch(dataframe)
 
 
 def reload_model():
-    """
-    Recharge le modèle depuis le disque
-    Utile après un retrain
-    """
+    """Reloads the model from disk"""
     predictor.load_model()
 
 
-# ========================================
-# TEST DU MODULE (pour debugging)
-# ========================================
-
 if __name__ == "__main__":
-    # Test simple avec les nouvelles features Powell
     test_data = {
         'koi_score': 0.95,
         'koi_period': 3.52,
@@ -311,5 +201,5 @@ if __name__ == "__main__":
     }
     
     result = predict_single(test_data)
-    print("Test de prédiction :")
+    print("Prediction test:")
     print(result)
